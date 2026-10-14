@@ -1,14 +1,14 @@
-# GoTodo
+# tada
 
-A simple command-line Todo List application written in Go.
+A simple, fast command-line task manager written in Go.
 
-GoTodo lets you manage tasks directly from your terminal and persists them locally using JSON.
+**tada** makes managing tasks quick and straightforward right from your terminal, with zero external dependencies and local JSON persistence.
 
 ## Features
 
 * **Zero external dependencies**: Built 100% on the Go standard library.
-* **Fast & lightweight**: Clean, instant CLI feedback on all actions.
-* **Intuitive subcommands & flags**: Support for both `todocli add` and `todocli --add`.
+* **Instant feedback**: Clear confirmation on every task operation.
+* **Intuitive subcommands & flags**: Support for both `tada add` and `tada --add`.
 * **Safe operations**: Confirmation prompt when clearing tasks (bypassable with `-f`).
 * **Atomic JSON persistence**: Prevents file corruption on unexpected interruptions.
 * Add, list, edit, toggle, and delete tasks.
@@ -20,64 +20,54 @@ GoTodo lets you manage tasks directly from your terminal and persists them local
 Tasks are stored locally at:
 
 ```text
-~/.todocli/todos.json
+~/.tada/todos.json
 ```
 
-No database or external service is required.
+No database or external service is required. Seamlessly migrates existing tasks from `~/.todocli/todos.json`.
 
 ## Installation
 
-### Linux — AppImage
-
-Download `GoTodo-x86_64.AppImage` from the GitHub Releases page.
-
-Make it executable:
-
-```bash
-chmod +x GoTodo-x86_64.AppImage
-```
-
-Run it:
-
-```bash
-./GoTodo-x86_64.AppImage
-```
-
-The AppImage does not require installation or Go to be installed.
-
 ### Linux — Standalone Binary
 
-Download `todocli-linux-amd64` from the GitHub Releases page.
+Download `tada-linux-amd64` from the GitHub Releases page.
 
-Make it executable:
-
-```bash
-chmod +x todocli-linux-amd64
-```
-
-For system-wide installation, move it to `/usr/local/bin`:
+Make it executable and install:
 
 ```bash
-sudo install -m 755 todocli-linux-amd64 /usr/local/bin/todocli
+chmod +x tada-linux-amd64
+sudo install -m 755 tada-linux-amd64 /usr/local/bin/tada
 ```
 
 You can now run it from anywhere:
 
 ```bash
-todocli
+tada
 ```
 
 Check that it is available:
 
 ```bash
-which todocli
+which tada
 ```
 
 Expected:
 
 ```text
-/usr/local/bin/todocli
+/usr/local/bin/tada
 ```
+
+### Linux — AppImage
+
+Download `tada-x86_64.AppImage` from the GitHub Releases page.
+
+Make it executable:
+
+```bash
+chmod +x tada-x86_64.AppImage
+./tada-x86_64.AppImage
+```
+
+The AppImage does not require installation or Go to be installed.
 
 ### Build from Source
 
@@ -91,45 +81,45 @@ Clone the repository and build:
 ```bash
 git clone https://github.com/callmekriztal/Go_Todo.git
 cd Go_Todo
-go build -trimpath -ldflags="-s -w" -o todocli .
+go build -trimpath -ldflags="-s -w" -o tada .
 ```
 
 Install system-wide on Linux:
 
 ```bash
-sudo install -m 755 todocli /usr/local/bin/todocli
+sudo install -m 755 tada /usr/local/bin/tada
 ```
 
 Verify:
 
 ```bash
-todocli help
+tada help
 ```
 
 ## Usage
 
 ### List tasks (default)
 
-Simply run `todocli` or `todocli list`:
+Simply run `tada` or `tada list`:
 
 ```bash
-todocli
+tada
 # or
-todocli list
+tada list
 ```
 
 ### Add a task
 
 ```bash
-todocli add "Learn Go"
+tada add "Learn Go"
 ```
 
-### Toggle task completion
+### Complete a task
 
 ```bash
-todocli done 1
+tada done 1
 # or
-todocli toggle 1
+tada toggle 1
 ```
 
 Running the command again reopens the task.
@@ -137,15 +127,15 @@ Running the command again reopens the task.
 ### Edit a task
 
 ```bash
-todocli edit 1 "Learn advanced Go"
+tada edit 1 "Learn advanced Go"
 ```
 
 ### Delete a task
 
 ```bash
-todocli del 1
+tada del 1
 # or
-todocli rm 1
+tada rm 1
 ```
 
 ### Clear all tasks
@@ -153,13 +143,13 @@ todocli rm 1
 Prompts for confirmation to prevent accidental loss:
 
 ```bash
-todocli clear
+tada clear
 ```
 
 To skip the confirmation prompt:
 
 ```bash
-todocli clear -f
+tada clear -f
 ```
 
 ### Flags compatibility
@@ -167,35 +157,35 @@ todocli clear -f
 All commands are also accessible via standard flags:
 
 ```bash
-todocli --list
-todocli --add "Learn Go"
-todocli --toggle 1
-todocli --edit 1:"Learn advanced Go"
-todocli --del 1
-todocli --clear
+tada --list
+tada --add "Learn Go"
+tada --toggle 1
+tada --edit 1:"Learn advanced Go"
+tada --del 1
+tada --clear
 ```
 
 ### Show help
 
 ```bash
-todocli help
+tada help
 # or
-todocli --help
+tada --help
 ```
 
 ## Example
 
 ```bash
-$ todocli add "Learn Go"
-✓ Added task #1: "Learn Go"
+$ tada add "Learn Go"
+Added task #1: "Learn Go"
 
-$ todocli add "Build a CLI app"
-✓ Added task #2: "Build a CLI app"
+$ tada add "Build a CLI app"
+Added task #2: "Build a CLI app"
 
-$ todocli done 1
-✓ Completed task #1: "Learn Go"
+$ tada done 1
+Completed task #1: "Learn Go"
 
-$ todocli
+$ tada
 ID    STATUS    TITLE              CREATED             COMPLETED
 1     [✓]       Learn Go           2026-10-14 23:30    2026-10-14 23:31
 2     [ ]       Build a CLI app    2026-10-14 23:30    -
@@ -225,9 +215,9 @@ go vet ./...
 
 ```text
 Go_Todo/
-├── command.go       # CLI flags and command execution
-├── helper.go        # Todo operations and display
-├── storage.go       # JSON persistence
+├── command.go       # CLI commands, subcommands, and flags
+├── helper.go        # Todo operations, display, and path helpers
+├── storage.go       # Atomic JSON persistence
 ├── main.go          # Application entry point
 ├── helper_test.go   # Unit tests
 ├── go.mod
@@ -239,13 +229,12 @@ Go_Todo/
 
 Prebuilt Linux binaries are available through GitHub Releases:
 
-* `GoTodo-x86_64.AppImage` — portable Linux AppImage
-* `todocli-linux-amd64` — standalone Linux binary
-
-The AppImage can be run without installation. The standalone binary can be installed system-wide using `/usr/local/bin`.
+* `tada-linux-amd64` — standalone Linux binary
+* `tada-x86_64.AppImage` — portable Linux AppImage
 
 ## License
 
 MIT License
 
 Made by Christy Dominic Cyrl
+

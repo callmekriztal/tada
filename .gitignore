@@ -1,6 +1,8 @@
+tada
+tada-*
 todocli
 todocli-linux-amd64
 *.AppImage
-AppDir/
+AppDir/usr/bin/
 todos.json
 *.tmp

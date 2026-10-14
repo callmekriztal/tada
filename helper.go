@@ -77,7 +77,7 @@ func (t *Todos) edit(index int, title string) error {
 
 func (t *Todos) print() {
 	if len(*t) == 0 {
-		fmt.Println("No tasks found! Run 'todocli add \"task description\"' to add one.")
+		fmt.Println("No tasks found! Run 'tada add \"task description\"' to add one.")
 		return
 	}
 
@@ -111,13 +111,23 @@ func todoFilePath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	dir := filepath.Join(home, ".todocli")
+	dir := filepath.Join(home, ".tada")
 
 	if err := os.MkdirAll(dir, 0700); err != nil {
 		return "", err
 	}
 
-	return filepath.Join(dir, "todos.json"), nil
+	target := filepath.Join(dir, "todos.json")
+
+	// Seamless migration from old ~/.todocli/todos.json if needed
+	if _, err := os.Stat(target); errors.Is(err, os.ErrNotExist) {
+		oldFile := filepath.Join(home, ".todocli", "todos.json")
+		if data, err := os.ReadFile(oldFile); err == nil {
+			_ = os.WriteFile(target, data, 0644)
+		}
+	}
+
+	return target, nil
 }
 
 func (t *Todos) clear() {

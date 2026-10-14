@@ -11,10 +11,10 @@ import (
 )
 
 func printHelp() {
-	fmt.Println("GoTodo - A simple command-line Todo List application")
+	fmt.Println("tada - A simple command-line task manager")
 	fmt.Println("\nUsage:")
-	fmt.Println("  todocli [command] [arguments]")
-	fmt.Println("  todocli [flags]")
+	fmt.Println("  tada [command] [arguments]")
+	fmt.Println("  tada [flags]")
 	fmt.Println("\nCommands:")
 	fmt.Println("  list, ls                 List all tasks (default)")
 	fmt.Println("  add <title>              Add a new task")
@@ -71,19 +71,19 @@ func RunCommand(args []string, todos *Todos) (bool, error) {
 
 	case "add":
 		if len(args) < 2 {
-			return false, errors.New("usage: todocli add <task title>")
+			return false, errors.New("usage: tada add <task title>")
 		}
 		title := strings.TrimSpace(strings.Join(args[1:], " "))
 		if title == "" {
 			return false, errors.New("task title cannot be empty")
 		}
 		todos.add(title)
-		fmt.Printf("✓ Added task #%d: %q\n", len(*todos), title)
+		fmt.Printf("Added task #%d: %q\n", len(*todos), title)
 		return true, nil
 
 	case "toggle", "done", "check":
 		if len(args) < 2 {
-			return false, errors.New("usage: todocli toggle <task id>")
+			return false, errors.New("usage: tada done <task id>")
 		}
 		index, err := parseIndex(args[1])
 		if err != nil {
@@ -94,15 +94,15 @@ func RunCommand(args []string, todos *Todos) (bool, error) {
 		}
 		item := (*todos)[index]
 		if item.Completed {
-			fmt.Printf("✓ Completed task #%d: %q\n", index+1, item.Title)
+			fmt.Printf("Completed task #%d: %q\n", index+1, item.Title)
 		} else {
-			fmt.Printf("○ Reopened task #%d: %q\n", index+1, item.Title)
+			fmt.Printf("Reopened task #%d: %q\n", index+1, item.Title)
 		}
 		return true, nil
 
 	case "del", "delete", "rm", "remove":
 		if len(args) < 2 {
-			return false, errors.New("usage: todocli del <task id>")
+			return false, errors.New("usage: tada del <task id>")
 		}
 		index, err := parseIndex(args[1])
 		if err != nil {
@@ -115,12 +115,12 @@ func RunCommand(args []string, todos *Todos) (bool, error) {
 		if err := todos.delete(index); err != nil {
 			return false, err
 		}
-		fmt.Printf("✓ Deleted task #%d: %q\n", index+1, title)
+		fmt.Printf("Deleted task #%d: %q\n", index+1, title)
 		return true, nil
 
 	case "edit":
 		if len(args) < 2 {
-			return false, errors.New("usage: todocli edit <task id> <new title>")
+			return false, errors.New("usage: tada edit <task id> <new title>")
 		}
 		var index int
 		var newTitle string
@@ -137,7 +137,7 @@ func RunCommand(args []string, todos *Todos) (bool, error) {
 			}
 		} else {
 			if len(args) < 3 {
-				return false, errors.New("usage: todocli edit <task id> <new title>")
+				return false, errors.New("usage: tada edit <task id> <new title>")
 			}
 			var err error
 			index, err = parseIndex(args[1])
@@ -155,7 +155,7 @@ func RunCommand(args []string, todos *Todos) (bool, error) {
 		if err := todos.edit(index, newTitle); err != nil {
 			return false, err
 		}
-		fmt.Printf("✓ Updated task #%d: %q\n", index+1, newTitle)
+		fmt.Printf("Updated task #%d: %q\n", index+1, newTitle)
 		return true, nil
 
 	case "clear":
@@ -168,7 +168,7 @@ func RunCommand(args []string, todos *Todos) (bool, error) {
 			return false, nil
 		}
 		todos.clear()
-		fmt.Println("✓ All tasks have been cleared.")
+		fmt.Println("All tasks have been cleared.")
 		return true, nil
 
 	case "help":
@@ -182,7 +182,7 @@ func RunCommand(args []string, todos *Todos) (bool, error) {
 }
 
 func runFlagCommand(args []string, todos *Todos) (bool, error) {
-	fs := flag.NewFlagSet("todocli", flag.ContinueOnError)
+	fs := flag.NewFlagSet("tada", flag.ContinueOnError)
 
 	var (
 		add    = fs.String("add", "", "Add a new Task")
@@ -211,7 +211,7 @@ func runFlagCommand(args []string, todos *Todos) (bool, error) {
 			return false, errors.New("task title cannot be empty")
 		}
 		todos.add(title)
-		fmt.Printf("✓ Added task #%d: %q\n", len(*todos), title)
+		fmt.Printf("Added task #%d: %q\n", len(*todos), title)
 		return true, nil
 
 	case *edit != "":
@@ -230,7 +230,7 @@ func runFlagCommand(args []string, todos *Todos) (bool, error) {
 		if err := todos.edit(index, newTitle); err != nil {
 			return false, err
 		}
-		fmt.Printf("✓ Updated task #%d: %q\n", index+1, newTitle)
+		fmt.Printf("Updated task #%d: %q\n", index+1, newTitle)
 		return true, nil
 
 	case *toggle != -1:
@@ -240,9 +240,9 @@ func runFlagCommand(args []string, todos *Todos) (bool, error) {
 		}
 		item := (*todos)[index]
 		if item.Completed {
-			fmt.Printf("✓ Completed task #%d: %q\n", index+1, item.Title)
+			fmt.Printf("Completed task #%d: %q\n", index+1, item.Title)
 		} else {
-			fmt.Printf("○ Reopened task #%d: %q\n", index+1, item.Title)
+			fmt.Printf("Reopened task #%d: %q\n", index+1, item.Title)
 		}
 		return true, nil
 
@@ -255,7 +255,7 @@ func runFlagCommand(args []string, todos *Todos) (bool, error) {
 		if err := todos.delete(index); err != nil {
 			return false, err
 		}
-		fmt.Printf("✓ Deleted task #%d: %q\n", index+1, title)
+		fmt.Printf("Deleted task #%d: %q\n", index+1, title)
 		return true, nil
 
 	case *clear:
@@ -264,7 +264,7 @@ func runFlagCommand(args []string, todos *Todos) (bool, error) {
 			return false, nil
 		}
 		todos.clear()
-		fmt.Println("✓ All tasks have been cleared.")
+		fmt.Println("All tasks have been cleared.")
 		return true, nil
 
 	default:

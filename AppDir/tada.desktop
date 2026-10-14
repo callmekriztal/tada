@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=tada
+Comment=A simple command-line task manager written in Go
+Exec=tada
+Terminal=true
+Icon=GoTodo-x86_64
+Type=Application
+Categories=Utility;
