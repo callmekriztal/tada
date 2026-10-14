@@ -7,29 +7,32 @@ import (
 )
 
 func main() {
-	done := Done{}
-
 	path, err := todoFilePath()
 	if err != nil {
-		panic(err)
-	}
-
-	storage := NewStorage[Done](path)
-
-	if err := storage.Load(&done); err != nil {
-		if !errors.Is(err, os.ErrNotExist) {
-			panic(err)
-		}
-	}
-
-	cmdFlags := NewCmdFlags()
-
-	if err := cmdFlags.Execute(&done); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintf(os.Stderr, "Error resolving storage path: %v\n", err)
 		os.Exit(1)
 	}
 
-	if err := storage.Save(done); err != nil {
-		panic(err)
+	storage := NewStorage[Todos](path)
+	todos := Todos{}
+
+	if err := storage.Load(&todos); err != nil {
+		if !errors.Is(err, os.ErrNotExist) {
+			fmt.Fprintf(os.Stderr, "Error loading tasks: %v\n", err)
+			os.Exit(1)
+		}
+	}
+
+	mutated, err := RunCommand(os.Args[1:], &todos)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	if mutated {
+		if err := storage.Save(todos); err != nil {
+			fmt.Fprintf(os.Stderr, "Error saving tasks: %v\n", err)
+			os.Exit(1)
+		}
 	}
 }

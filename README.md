@@ -6,16 +6,14 @@ GoTodo lets you manage tasks directly from your terminal and persists them local
 
 ## Features
 
-* Add tasks
-* List tasks in a formatted table
-* Edit tasks
-* Delete tasks
-* Toggle task completion
-* Clear the entire task list
-* Persistent JSON storage
-* Task creation and completion timestamps
-* Input validation and error handling
-* Unit tests
+* **Zero external dependencies**: Built 100% on the Go standard library.
+* **Fast & lightweight**: Clean, instant CLI feedback on all actions.
+* **Intuitive subcommands & flags**: Support for both `todocli add` and `todocli --add`.
+* **Safe operations**: Confirmation prompt when clearing tasks (bypassable with `-f`).
+* **Atomic JSON persistence**: Prevents file corruption on unexpected interruptions.
+* Add, list, edit, toggle, and delete tasks.
+* Compact timestamps and formatted terminal table.
+* Full unit test suite with 100% standard library tests.
 
 ## Storage
 
@@ -42,7 +40,7 @@ chmod +x GoTodo-x86_64.AppImage
 Run it:
 
 ```bash
-./GoTodo-x86_64.AppImage --list
+./GoTodo-x86_64.AppImage
 ```
 
 The AppImage does not require installation or Go to be installed.
@@ -66,7 +64,7 @@ sudo install -m 755 todocli-linux-amd64 /usr/local/bin/todocli
 You can now run it from anywhere:
 
 ```bash
-todocli --list
+todocli
 ```
 
 Check that it is available:
@@ -105,88 +103,102 @@ sudo install -m 755 todocli /usr/local/bin/todocli
 Verify:
 
 ```bash
-todocli --help
+todocli help
 ```
 
 ## Usage
 
+### List tasks (default)
+
+Simply run `todocli` or `todocli list`:
+
+```bash
+todocli
+# or
+todocli list
+```
+
 ### Add a task
 
 ```bash
-todocli --add "Learn Go"
-```
-
-### List tasks
-
-```bash
-todocli --list
-```
-
-### Edit a task
-
-Task indexes start at `1`.
-
-```bash
-todocli --edit 1:"Learn advanced Go"
-```
-
-Format:
-
-```text
---edit <task_index>:<new_title>
+todocli add "Learn Go"
 ```
 
 ### Toggle task completion
 
 ```bash
-todocli --toggle 1
+todocli done 1
+# or
+todocli toggle 1
 ```
 
-Running the command again marks the task as incomplete.
+Running the command again reopens the task.
+
+### Edit a task
+
+```bash
+todocli edit 1 "Learn advanced Go"
+```
 
 ### Delete a task
 
 ```bash
-todocli --del 1
+todocli del 1
+# or
+todocli rm 1
 ```
 
 ### Clear all tasks
 
+Prompts for confirmation to prevent accidental loss:
+
 ```bash
-todocli --clear
+todocli clear
 ```
 
-This permanently removes every task from the current todo list.
+To skip the confirmation prompt:
+
+```bash
+todocli clear -f
+```
+
+### Flags compatibility
+
+All commands are also accessible via standard flags:
+
+```bash
+todocli --list
+todocli --add "Learn Go"
+todocli --toggle 1
+todocli --edit 1:"Learn advanced Go"
+todocli --del 1
+todocli --clear
+```
 
 ### Show help
 
 ```bash
+todocli help
+# or
 todocli --help
 ```
 
 ## Example
 
 ```bash
-$ todocli --add "Learn Go"
-$ todocli --add "Build a backend"
-$ todocli --list
-```
+$ todocli add "Learn Go"
+✓ Added task #1: "Learn Go"
 
-Example output:
+$ todocli add "Build a CLI app"
+✓ Added task #2: "Build a CLI app"
 
-```text
-┌─────────┬─────────────────┬───────────┬───────────────────────────────┬──────────────┐
-│ Task No │      Title      │ Completed │          Created At           │ Completed At │
-├─────────┼─────────────────┼───────────┼───────────────────────────────┼──────────────┤
-│ 1       │ Learn Go        │ ✖️         │ Mon, 24 Aug 2026 19:00:00 IST │              │
-│ 2       │ Build a backend │ ✖️         │ Mon, 24 Aug 2026 19:01:00 IST │              │
-└─────────┴─────────────────┴───────────┴───────────────────────────────┴──────────────┘
-```
+$ todocli done 1
+✓ Completed task #1: "Learn Go"
 
-Complete a task:
-
-```bash
-todocli --toggle 1
+$ todocli
+ID    STATUS    TITLE              CREATED             COMPLETED
+1     [✓]       Learn Go           2026-10-14 23:30    2026-10-14 23:31
+2     [ ]       Build a CLI app    2026-10-14 23:30    -
 ```
 
 ## Testing

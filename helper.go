@@ -2,104 +2,108 @@ package main
 
 import (
 	"errors"
-	"github.com/aquasecurity/table"
+	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
+	"text/tabwriter"
 	"time"
 )
 
 var ErrInvalidIndex = errors.New("invalid index")
 
 type Todo struct {
-	Title       string
-	Completed   bool
-	CreatedAt   time.Time
-	CompletedAt *time.Time
+	Title       string     `json:"title"`
+	Completed   bool       `json:"completed"`
+	CreatedAt   time.Time  `json:"created_at"`
+	CompletedAt *time.Time `json:"completed_at,omitempty"`
 }
 
-type Done []Todo
+type Todos []Todo
 
-func (d *Done) add(title string) {
+// Done is kept as a type alias for backward compatibility.
+type Done = Todos
+
+func (t *Todos) add(title string) {
 	todo := Todo{
 		Title:       title,
 		Completed:   false,
 		CreatedAt:   time.Now(),
 		CompletedAt: nil,
 	}
-	*d = append(*d, todo)
+	*t = append(*t, todo)
 }
 
-func (d *Done) validateIndex(index int) error {
-	if index < 0 || index >= len(*d) {
+func (t *Todos) validateIndex(index int) error {
+	if index < 0 || index >= len(*t) {
 		return ErrInvalidIndex
 	}
 	return nil
 }
 
-func (d *Done) delete(index int) error {
-	if err := d.validateIndex(index); err != nil {
+func (t *Todos) delete(index int) error {
+	if err := t.validateIndex(index); err != nil {
 		return err
 	}
 
-	*d = append((*d)[:index], (*d)[index+1:]...)
-
+	*t = append((*t)[:index], (*t)[index+1:]...)
 	return nil
 }
 
-func (d *Done) toggle(index int) error {
-
-	if err := d.validateIndex(index); err != nil {
+func (t *Todos) toggle(index int) error {
+	if err := t.validateIndex(index); err != nil {
 		return err
 	}
 
-	if (*d)[index].Completed {
-		(*d)[index].Completed = false
-		(*d)[index].CompletedAt = nil
-	} else {
+	item := &(*t)[index]
+	item.Completed = !item.Completed
+	if item.Completed {
 		completionTime := time.Now()
-		(*d)[index].CompletedAt = &completionTime
-		(*d)[index].Completed = true
+		item.CompletedAt = &completionTime
+	} else {
+		item.CompletedAt = nil
 	}
 
 	return nil
 }
 
-func (d *Done) edit(index int, title string) error {
-
-	if err := d.validateIndex(index); err != nil {
+func (t *Todos) edit(index int, title string) error {
+	if err := t.validateIndex(index); err != nil {
 		return err
 	}
 
-	(*d)[index].Title = title
-
+	(*t)[index].Title = title
 	return nil
 }
 
-func (d *Done) print() {
-	table := table.New(os.Stdout)
-	table.SetRowLines(false)
-	table.SetHeaders("Task No", "Title", "Completed", "Created At", "Completed At")
+func (t *Todos) print() {
+	if len(*t) == 0 {
+		fmt.Println("No tasks found! Run 'todocli add \"task description\"' to add one.")
+		return
+	}
 
-	for index, t := range *d {
-		completed := "✖️"
-		completedAt := ""
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 4, ' ', 0)
+	fmt.Fprintln(w, "ID\tSTATUS\tTITLE\tCREATED\tCOMPLETED")
 
-		if t.Completed {
-			completed = "✅"
-			if t.CompletedAt != nil {
-				completedAt = t.CompletedAt.Format(time.RFC1123)
+	for index, item := range *t {
+		status := "[ ]"
+		completedAt := "-"
+
+		if item.Completed {
+			status = "[✓]"
+			if item.CompletedAt != nil {
+				completedAt = item.CompletedAt.Format("2006-01-02 15:04")
 			}
 		}
-		table.AddRow(
-			strconv.Itoa(index+1),
-			t.Title,
-			completed,
-			t.CreatedAt.Format(time.RFC1123),
+
+		fmt.Fprintf(w, "%d\t%s\t%s\t%s\t%s\n",
+			index+1,
+			status,
+			item.Title,
+			item.CreatedAt.Format("2006-01-02 15:04"),
 			completedAt,
 		)
 	}
-	table.Render()
+	w.Flush()
 }
 
 func todoFilePath() (string, error) {
@@ -116,6 +120,6 @@ func todoFilePath() (string, error) {
 	return filepath.Join(dir, "todos.json"), nil
 }
 
-func (d *Done) clear() {
-	*d = Done{}
+func (t *Todos) clear() {
+	*t = Todos{}
 }
