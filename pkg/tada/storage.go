@@ -1,4 +1,4 @@
-package main
+package tada
 
 import (
 	"encoding/json"

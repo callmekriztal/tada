@@ -1,4 +1,4 @@
-package main
+package tada
 
 import (
 	"fmt"
@@ -516,4 +516,31 @@ func RunTUI(todos *Todos, storage *Storage[Todos]) error {
 	p := tea.NewProgram(m, tea.WithAltScreen())
 	_, err := p.Run()
 	return err
+}
+
+type TUIModel = tuiModel
+
+func NewTUIModel(todos *Todos, storage *Storage[Todos]) TUIModel {
+	return newTUIModel(todos, storage)
+}
+
+func (m *tuiModel) SetSize(w, h int) {
+	m.width = w
+	m.height = h
+}
+
+func (m tuiModel) Cursor() int {
+	return m.cursor
+}
+
+func (m tuiModel) Filter() FilterState {
+	return m.filter
+}
+
+func (m tuiModel) FilteredIndices() []int {
+	return m.filteredIndices
+}
+
+func (m tuiModel) Adding() bool {
+	return m.adding
 }

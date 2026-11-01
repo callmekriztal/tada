@@ -1,4 +1,4 @@
-package main
+package tada
 
 import (
 	"encoding/json"
@@ -28,13 +28,17 @@ var tagRegex = regexp.MustCompile(`#([a-zA-Z0-9_\-]+)`)
 
 // periodRange implements the requirement:
 // periodRange(period string) (from, to time.Time)
-func periodRange(period string) (from, to time.Time) {
+func periodRange(period string) (from, to time.Time) { return PeriodRange(period) }
+
+func PeriodRange(period string) (from, to time.Time) {
 	from, to, _, _ = periodRangeAt(period, time.Now())
 	return from, to
 }
 
 // periodRangeAt computes the date boundaries and display label relative to a reference time.
-func periodRangeAt(period string, now time.Time) (from, to time.Time, label string, err error) {
+func periodRangeAt(period string, now time.Time) (from, to time.Time, label string, err error) { return PeriodRangeAt(period, now) }
+
+func PeriodRangeAt(period string, now time.Time) (from, to time.Time, label string, err error) {
 	norm := strings.ToLower(strings.TrimSpace(period))
 	if norm == "" {
 		norm = "all"
@@ -172,7 +176,9 @@ func ComputeStats(todos Todos, period string, now time.Time) (TodoStats, error) 
 }
 
 // calculateStreaks returns the current streak and longest historical streak.
-func calculateStreaks(todos Todos, now time.Time) (currentStreak int, longestStreak int) {
+func calculateStreaks(todos Todos, now time.Time) (int, int) { return CalculateStreaks(todos, now) }
+
+func CalculateStreaks(todos Todos, now time.Time) (currentStreak int, longestStreak int) {
 	loc := now.Location()
 	completionDates := make(map[string]time.Time)
 

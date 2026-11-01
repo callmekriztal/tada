@@ -1,4 +1,4 @@
-package main
+package tests
 
 import (
 	"bytes"
@@ -8,19 +8,21 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"tada/pkg/tada"
 )
 
 func TestPeriodRangeAndPeriodRangeAt(t *testing.T) {
 	refTime := time.Date(2026, 11, 1, 14, 30, 0, 0, time.Local)
 
-	// Test periodRange wrapper
-	from, to := periodRange("today")
+	// Test PeriodRange wrapper
+	from, to := tada.PeriodRange("today")
 	if from.IsZero() || to.IsZero() {
-		t.Fatalf("periodRange('today') returned zero times")
+		t.Fatalf("PeriodRange('today') returned zero times")
 	}
 
 	// 1. Today
-	from, to, label, err := periodRangeAt("today", refTime)
+	from, to, label, err := tada.PeriodRangeAt("today", refTime)
 	if err != nil {
 		t.Fatalf("unexpected error for today: %v", err)
 	}
@@ -36,7 +38,7 @@ func TestPeriodRangeAndPeriodRangeAt(t *testing.T) {
 	}
 
 	// 2. Week (7 days)
-	from, to, label, err = periodRangeAt("week", refTime)
+	from, to, label, err = tada.PeriodRangeAt("week", refTime)
 	if err != nil {
 		t.Fatalf("unexpected error for week: %v", err)
 	}
@@ -49,7 +51,7 @@ func TestPeriodRangeAndPeriodRangeAt(t *testing.T) {
 	}
 
 	// 3. Month (30 days)
-	from, to, label, err = periodRangeAt("month", refTime)
+	from, to, label, err = tada.PeriodRangeAt("month", refTime)
 	if err != nil {
 		t.Fatalf("unexpected error for month: %v", err)
 	}
@@ -62,7 +64,7 @@ func TestPeriodRangeAndPeriodRangeAt(t *testing.T) {
 	}
 
 	// 4. All
-	from, to, label, err = periodRangeAt("all", refTime)
+	from, to, label, err = tada.PeriodRangeAt("all", refTime)
 	if err != nil {
 		t.Fatalf("unexpected error for all: %v", err)
 	}
@@ -74,7 +76,7 @@ func TestPeriodRangeAndPeriodRangeAt(t *testing.T) {
 	}
 
 	// 5. Invalid
-	_, _, _, err = periodRangeAt("invalid_period", refTime)
+	_, _, _, err = tada.PeriodRangeAt("invalid_period", refTime)
 	if err == nil {
 		t.Fatalf("expected error for invalid period, got nil")
 	}
@@ -82,9 +84,9 @@ func TestPeriodRangeAndPeriodRangeAt(t *testing.T) {
 
 func TestComputeStats_EmptyTodos(t *testing.T) {
 	now := time.Date(2026, 11, 1, 12, 0, 0, 0, time.Local)
-	todos := Todos{}
+	todos := tada.Todos{}
 
-	stats, err := ComputeStats(todos, "all", now)
+	stats, err := tada.ComputeStats(todos, "all", now)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -113,7 +115,7 @@ func TestComputeStats_MetricsAndFiltering(t *testing.T) {
 	t10DaysAgo := time.Date(2026, 10, 22, 11, 0, 0, 0, time.Local)
 	t40DaysAgo := time.Date(2026, 9, 22, 8, 0, 0, 0, time.Local)
 
-	todos := Todos{
+	todos := tada.Todos{
 		// Created & completed today
 		{Title: "Task today #work", Completed: true, CreatedAt: tToday, CompletedAt: &tToday},
 		// Created 3 days ago, completed 3 days ago
@@ -129,7 +131,7 @@ func TestComputeStats_MetricsAndFiltering(t *testing.T) {
 	}
 
 	// 1. Period: today
-	statsToday, err := ComputeStats(todos, "today", now)
+	statsToday, err := tada.ComputeStats(todos, "today", now)
 	if err != nil {
 		t.Fatalf("ComputeStats today failed: %v", err)
 	}
@@ -150,7 +152,7 @@ func TestComputeStats_MetricsAndFiltering(t *testing.T) {
 	}
 
 	// 2. Period: week (last 7 days includes today & 3 days ago)
-	statsWeek, err := ComputeStats(todos, "week", now)
+	statsWeek, err := tada.ComputeStats(todos, "week", now)
 	if err != nil {
 		t.Fatalf("ComputeStats week failed: %v", err)
 	}
@@ -173,7 +175,7 @@ func TestComputeStats_MetricsAndFiltering(t *testing.T) {
 	}
 
 	// 3. Period: month (last 30 days includes today, 3d, 10d)
-	statsMonth, err := ComputeStats(todos, "month", now)
+	statsMonth, err := tada.ComputeStats(todos, "month", now)
 	if err != nil {
 		t.Fatalf("ComputeStats month failed: %v", err)
 	}
@@ -189,7 +191,7 @@ func TestComputeStats_MetricsAndFiltering(t *testing.T) {
 	}
 
 	// 4. Period: all
-	statsAll, err := ComputeStats(todos, "all", now)
+	statsAll, err := tada.ComputeStats(todos, "all", now)
 	if err != nil {
 		t.Fatalf("ComputeStats all failed: %v", err)
 	}
@@ -223,7 +225,7 @@ func TestStreaks(t *testing.T) {
 	d0 := makeDay(2026, 10, 31)
 	dm1 := makeDay(2026, 10, 30) // Historical 5-day streak: Oct 30 - Nov 3
 
-	todos := Todos{
+	todos := tada.Todos{
 		// Historical 5-day streak
 		{Title: "H1", Completed: true, CreatedAt: dm1, CompletedAt: &dm1},
 		{Title: "H2", Completed: true, CreatedAt: d0, CompletedAt: &d0},
@@ -238,7 +240,7 @@ func TestStreaks(t *testing.T) {
 		{Title: "C4", Completed: true, CreatedAt: d10, CompletedAt: &d10},
 	}
 
-	curr, longest := calculateStreaks(todos, now)
+	curr, longest := tada.CalculateStreaks(todos, now)
 	if curr != 4 {
 		t.Fatalf("expected current streak 4, got %d", curr)
 	}
@@ -248,7 +250,7 @@ func TestStreaks(t *testing.T) {
 
 	// If today has no completion yet, streak is maintained if yesterday had completion
 	todosWithoutToday := todos[:len(todos)-1]
-	curr2, longest2 := calculateStreaks(todosWithoutToday, now)
+	curr2, longest2 := tada.CalculateStreaks(todosWithoutToday, now)
 	if curr2 != 3 {
 		t.Fatalf("expected maintained current streak 3 (from yesterday), got %d", curr2)
 	}
@@ -258,7 +260,7 @@ func TestStreaks(t *testing.T) {
 
 	// If neither today nor yesterday has completion, current streak is 0
 	todosBroken := todos[:len(todos)-2] // stops at d8 (2 days ago)
-	curr3, longest3 := calculateStreaks(todosBroken, now)
+	curr3, longest3 := tada.CalculateStreaks(todosBroken, now)
 	if curr3 != 0 {
 		t.Fatalf("expected broken current streak 0, got %d", curr3)
 	}
@@ -268,7 +270,7 @@ func TestStreaks(t *testing.T) {
 }
 
 func TestFormatStats(t *testing.T) {
-	stats := TodoStats{
+	stats := tada.TodoStats{
 		Period:         "week",
 		PeriodLabel:    "Last 7 days",
 		TasksCompleted: 8,
@@ -283,7 +285,7 @@ func TestFormatStats(t *testing.T) {
 		},
 	}
 
-	output := FormatStats(stats)
+	output := tada.FormatStats(stats)
 	if !strings.Contains(output, "Todo Statistics (Last 7 days)") {
 		t.Fatalf("missing header in output: %s", output)
 	}
@@ -314,7 +316,7 @@ func TestFormatStats(t *testing.T) {
 }
 
 func TestOutputStats_JSON(t *testing.T) {
-	stats := TodoStats{
+	stats := tada.TodoStats{
 		Period:         "all",
 		PeriodLabel:    "All time",
 		TasksCompleted: 5,
@@ -330,7 +332,7 @@ func TestOutputStats_JSON(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := OutputStats(stats, true)
+	err := tada.OutputStats(stats, true)
 	w.Close()
 	os.Stdout = oldStdout
 
@@ -341,7 +343,7 @@ func TestOutputStats_JSON(t *testing.T) {
 	var buf bytes.Buffer
 	io.Copy(&buf, r)
 
-	var unmarshaled TodoStats
+	var unmarshaled tada.TodoStats
 	if err := json.Unmarshal(buf.Bytes(), &unmarshaled); err != nil {
 		t.Fatalf("failed to unmarshal JSON output %q: %v", buf.String(), err)
 	}
@@ -353,7 +355,7 @@ func TestOutputStats_JSON(t *testing.T) {
 
 func TestRunCommand_StatsIntegration(t *testing.T) {
 	now := time.Now()
-	todos := Todos{
+	todos := tada.Todos{
 		{Title: "Task 1 #cli", Completed: true, CreatedAt: now, CompletedAt: &now},
 		{Title: "Task 2 #cli", Completed: false, CreatedAt: now, CompletedAt: nil},
 	}
@@ -373,7 +375,7 @@ func TestRunCommand_StatsIntegration(t *testing.T) {
 	}
 
 	for _, cmd := range subcommandTests {
-		mutated, err := RunCommand(cmd, &todos)
+		mutated, err := tada.RunCommand(cmd, &todos)
 		if err != nil {
 			t.Fatalf("RunCommand(%v) returned error: %v", cmd, err)
 		}
@@ -391,7 +393,7 @@ func TestRunCommand_StatsIntegration(t *testing.T) {
 	}
 
 	for _, cmd := range flagTests {
-		mutated, err := RunCommand(cmd, &todos)
+		mutated, err := tada.RunCommand(cmd, &todos)
 		if err != nil {
 			t.Fatalf("RunCommand(%v) returned error: %v", cmd, err)
 		}
@@ -401,7 +403,7 @@ func TestRunCommand_StatsIntegration(t *testing.T) {
 	}
 
 	// Invalid period
-	_, err := RunCommand([]string{"stats", "-p", "invalid_period"}, &todos)
+	_, err := tada.RunCommand([]string{"stats", "-p", "invalid_period"}, &todos)
 	if err == nil {
 		t.Fatalf("expected error for invalid period, got nil")
 	}

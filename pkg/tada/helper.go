@@ -1,4 +1,4 @@
-package main
+package tada
 
 import (
 	"errors"
@@ -23,7 +23,7 @@ type Todos []Todo
 // Done is kept as a type alias for backward compatibility.
 type Done = Todos
 
-func (t *Todos) add(title string) {
+func (t *Todos) Add(title string) {
 	todo := Todo{
 		Title:       title,
 		Completed:   false,
@@ -33,15 +33,23 @@ func (t *Todos) add(title string) {
 	*t = append(*t, todo)
 }
 
-func (t *Todos) validateIndex(index int) error {
+func (t *Todos) add(title string) {
+	t.Add(title)
+}
+
+func (t *Todos) ValidateIndex(index int) error {
 	if index < 0 || index >= len(*t) {
 		return ErrInvalidIndex
 	}
 	return nil
 }
 
-func (t *Todos) delete(index int) error {
-	if err := t.validateIndex(index); err != nil {
+func (t *Todos) validateIndex(index int) error {
+	return t.ValidateIndex(index)
+}
+
+func (t *Todos) Delete(index int) error {
+	if err := t.ValidateIndex(index); err != nil {
 		return err
 	}
 
@@ -49,8 +57,12 @@ func (t *Todos) delete(index int) error {
 	return nil
 }
 
-func (t *Todos) toggle(index int) error {
-	if err := t.validateIndex(index); err != nil {
+func (t *Todos) delete(index int) error {
+	return t.Delete(index)
+}
+
+func (t *Todos) Toggle(index int) error {
+	if err := t.ValidateIndex(index); err != nil {
 		return err
 	}
 
@@ -66,8 +78,12 @@ func (t *Todos) toggle(index int) error {
 	return nil
 }
 
-func (t *Todos) edit(index int, title string) error {
-	if err := t.validateIndex(index); err != nil {
+func (t *Todos) toggle(index int) error {
+	return t.Toggle(index)
+}
+
+func (t *Todos) Edit(index int, title string) error {
+	if err := t.ValidateIndex(index); err != nil {
 		return err
 	}
 
@@ -75,7 +91,11 @@ func (t *Todos) edit(index int, title string) error {
 	return nil
 }
 
-func (t *Todos) print() {
+func (t *Todos) edit(index int, title string) error {
+	return t.Edit(index, title)
+}
+
+func (t *Todos) Print() {
 	if len(*t) == 0 {
 		fmt.Println("No tasks found! Run 'tada add \"task description\"' to add one.")
 		return
@@ -106,7 +126,11 @@ func (t *Todos) print() {
 	w.Flush()
 }
 
-func todoFilePath() (string, error) {
+func (t *Todos) print() {
+	t.Print()
+}
+
+func TodoFilePath() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
@@ -130,6 +154,14 @@ func todoFilePath() (string, error) {
 	return target, nil
 }
 
-func (t *Todos) clear() {
+func todoFilePath() (string, error) {
+	return TodoFilePath()
+}
+
+func (t *Todos) Clear() {
 	*t = Todos{}
+}
+
+func (t *Todos) clear() {
+	t.Clear()
 }

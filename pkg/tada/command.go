@@ -1,4 +1,4 @@
-package main
+package tada
 
 import (
 	"bufio"
@@ -11,7 +11,9 @@ import (
 	"time"
 )
 
-func printHelp() {
+func printHelp() { PrintHelp() }
+
+func PrintHelp() {
 	fmt.Println("tada - A simple command-line task manager")
 	fmt.Println("\nUsage:")
 	fmt.Println("  tada                     Launch interactive TUI (default)")
