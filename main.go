@@ -23,6 +23,14 @@ func main() {
 		}
 	}
 
+	if len(os.Args) == 1 || (len(os.Args) == 2 && os.Args[1] == "tui") {
+		if err := RunTUI(&todos, storage); err != nil {
+			fmt.Fprintf(os.Stderr, "TUI error: %v\n", err)
+			os.Exit(1)
+		}
+		return
+	}
+
 	mutated, err := RunCommand(os.Args[1:], &todos)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
