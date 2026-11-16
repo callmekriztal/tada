@@ -29,6 +29,7 @@ type tuiModel struct {
 	width           int
 	height          int
 	quitting        bool
+	showOpening     bool
 }
 
 // Sophisticated, cohesive color palette (inspired by Tokyo Night / Catppuccin)
@@ -146,10 +147,11 @@ func newTUIModel(todos *Todos, storage *Storage[Todos]) tuiModel {
 	ti.Width = 46
 
 	m := tuiModel{
-		todos:   todos,
-		storage: storage,
-		filter:  FilterAll,
-		input:   ti,
+		todos:       todos,
+		storage:     storage,
+		filter:      FilterAll,
+		input:       ti,
+		showOpening: true,
 	}
 	m.rebuildFiltered()
 	return m
@@ -209,6 +211,18 @@ func (m tuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case tea.KeyMsg:
+		if m.showOpening {
+			switch msg.String() {
+			case "q", "ctrl+c":
+				m.quitting = true
+				return m, tea.Quit
+			case "s", "S":
+				m.showOpening = false
+				return m, nil
+			}
+			return m, nil
+		}
+
 		if m.adding {
 			switch msg.String() {
 			case "enter":
@@ -301,6 +315,10 @@ func (m tuiModel) View() string {
 		return ""
 	}
 
+	if m.showOpening {
+		return m.openingView()
+	}
+
 	// Dynamic, breathing width: 72 columns default, gracefully shrinking on small windows
 	targetWidth := 74
 	if m.width > 0 && m.width-4 < targetWidth {
@@ -315,7 +333,7 @@ func (m tuiModel) View() string {
 	activeCount, completedCount, totalCount := m.countStats()
 	titleLeft := lipgloss.JoinHorizontal(
 		lipgloss.Center,
-		titleStyle.Render("📝 TADA TODO"),
+		titleStyle.Render("TADA TODO"),
 		"  ",
 		subtitleStyle.Render("• task manager"),
 	)
@@ -544,3 +562,70 @@ func (m tuiModel) FilteredIndices() []int {
 func (m tuiModel) Adding() bool {
 	return m.adding
 }
+
+func (m tuiModel) ShowOpening() bool {
+	return m.showOpening
+}
+
+func (m *tuiModel) SetOpening(show bool) {
+	m.showOpening = show
+}
+
+func (m tuiModel) openingView() string {
+	targetWidth := 58
+	if m.width > 0 && m.width-4 < targetWidth {
+		targetWidth = m.width - 4
+		if targetWidth < 36 {
+			targetWidth = 36
+		}
+	}
+	innerWidth := targetWidth - 6
+
+	asciiLogo := "  _             _       \n" +
+		" | |           | |      \n" +
+		" | |_ __ _   __| | __ _ \n" +
+		" | __/ _` | / _` |/ _` |\n" +
+		" | || (_| || (_| | (_| |\n" +
+		"  \\__\\__,_| \\__,_|\\__,_|"
+
+	logoStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(cPrimary).
+		Align(lipgloss.Center)
+
+	taglineStyle := lipgloss.NewStyle().
+		Foreground(cTextMuted).
+		Align(lipgloss.Center)
+
+	promptStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(cAccent).
+		Align(lipgloss.Center)
+
+	divider := dividerStyle.Width(innerWidth).Render(strings.Repeat("─", innerWidth))
+
+	renderedLogo := logoStyle.Width(innerWidth).Render(asciiLogo)
+	renderedTagline := taglineStyle.Width(innerWidth).Render("tada • a simple, fast task manager")
+	renderedPrompt := promptStyle.Width(innerWidth).Render("press s to continue")
+
+	var elements []string
+	elements = append(elements, "")
+	elements = append(elements, renderedLogo)
+	elements = append(elements, "")
+	elements = append(elements, renderedTagline)
+	elements = append(elements, "")
+	elements = append(elements, divider)
+	elements = append(elements, "")
+	elements = append(elements, renderedPrompt)
+	elements = append(elements, "")
+
+	cardContent := strings.Join(elements, "\n")
+	card := cardStyle.Width(targetWidth).Render(cardContent)
+
+	if m.width > 0 && m.height > 0 {
+		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, card)
+	}
+
+	return card
+}
+

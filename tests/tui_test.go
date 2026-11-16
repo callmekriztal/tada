@@ -8,12 +8,59 @@ import (
 	"tada/pkg/tada"
 )
 
+func TestTUIOpeningScreen(t *testing.T) {
+	todos := tada.Todos{}
+	todos.Add("Task 1")
+
+	m := tada.NewTUIModel(&todos, nil)
+	m.SetSize(80, 24)
+
+	if !m.ShowOpening() {
+		t.Fatal("expected TUI to start on opening screen")
+	}
+
+	openingView := m.View()
+	if !strings.Contains(strings.ToLower(openingView), "tada") {
+		t.Fatalf("expected opening screen to contain 'tada', got:\n%s", openingView)
+	}
+	if !strings.Contains(strings.ToLower(openingView), "press s to continue") {
+		t.Fatalf("expected opening screen to contain 'press s to continue', got:\n%s", openingView)
+	}
+
+	// Pressing other keys does not dismiss opening screen
+	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'j'}})
+	m = updated.(tada.TUIModel)
+	if !m.ShowOpening() {
+		t.Fatal("expected opening screen to stay visible on random keypress")
+	}
+
+	// Pressing 's' dismisses opening screen and enters main view
+	updated, _ = m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'s'}})
+	m = updated.(tada.TUIModel)
+	if m.ShowOpening() {
+		t.Fatal("expected opening screen to dismiss on 's'")
+	}
+
+	mainView := m.View()
+	if !strings.Contains(mainView, "TADA TODO") {
+		t.Fatalf("expected main view after pressing 's', got:\n%s", mainView)
+	}
+
+	// Pressing 'q' on opening screen quits
+	m2 := tada.NewTUIModel(&todos, nil)
+	_, cmd := m2.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'q'}})
+	if cmd == nil {
+		t.Fatal("expected quit cmd on 'q' in opening screen")
+	}
+}
+
 func TestTUIInitAndRender(t *testing.T) {
 	todos := tada.Todos{}
 	todos.Add("Task 1")
 	todos.Add("Task 2")
 
 	m := tada.NewTUIModel(&todos, nil)
+	m.SetOpening(false)
 	m.SetSize(80, 24)
 
 	view := m.View()
@@ -34,6 +81,7 @@ func TestTUINavigationAndToggle(t *testing.T) {
 	todos.Add("Task 2")
 
 	m := tada.NewTUIModel(&todos, nil)
+	m.SetOpening(false)
 
 	// Move down
 	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'j'}})
@@ -71,6 +119,7 @@ func TestTUIFilterTabs(t *testing.T) {
 	_ = todos.Toggle(1) // Task 2 completed
 
 	m := tada.NewTUIModel(&todos, nil)
+	m.SetOpening(false)
 	if len(m.FilteredIndices()) != 2 {
 		t.Fatalf("expected 2 tasks in FilterAll, got %d", len(m.FilteredIndices()))
 	}
@@ -109,6 +158,7 @@ func TestTUIFilterTabs(t *testing.T) {
 func TestTUIAddTaskInline(t *testing.T) {
 	todos := tada.Todos{}
 	m := tada.NewTUIModel(&todos, nil)
+	m.SetOpening(false)
 
 	// Press 'a' to begin adding
 	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'a'}})
@@ -152,6 +202,7 @@ func TestTUIDeleteTask(t *testing.T) {
 	todos.Add("Task 2")
 
 	m := tada.NewTUIModel(&todos, nil)
+	m.SetOpening(false)
 
 	// Delete Task 1
 	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'d'}})
@@ -168,6 +219,7 @@ func TestTUIDeleteTask(t *testing.T) {
 func TestTUIQuit(t *testing.T) {
 	todos := tada.Todos{}
 	m := tada.NewTUIModel(&todos, nil)
+	m.SetOpening(false)
 
 	_, cmd := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'q'}})
 	if cmd == nil {
