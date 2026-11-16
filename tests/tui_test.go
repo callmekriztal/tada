@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"tada/pkg/tada"
+	"github.com/callmekriztal/tada/v2/pkg/tada"
 )
 
 func TestTUIOpeningScreen(t *testing.T) {

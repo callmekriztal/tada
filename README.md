@@ -36,7 +36,7 @@ rm tada
 If you have Go installed (`go 1.20+`):
 
 ```bash
-go install github.com/callmekriztal/tada@latest
+go install github.com/callmekriztal/tada/v2@latest
 ```
 
 Ensure `$(go env GOPATH)/bin` is in your `$PATH`.

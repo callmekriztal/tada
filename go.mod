@@ -1,4 +1,4 @@
-module tada
+module github.com/callmekriztal/tada/v2
 
 go 1.24.9
 

@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"tada/pkg/tada"
+	"github.com/callmekriztal/tada/v2/pkg/tada"
 )
 
 func TestPeriodRangeAndPeriodRangeAt(t *testing.T) {

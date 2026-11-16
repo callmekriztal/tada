@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"tada/pkg/tada"
+	"github.com/callmekriztal/tada/v2/pkg/tada"
 )
 
 func TestToggle(t *testing.T) {

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"tada/pkg/tada"
+	"github.com/callmekriztal/tada/v2/pkg/tada"
 )
 
 func main() {
